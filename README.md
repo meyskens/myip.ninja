@@ -6,7 +6,7 @@ MYIP.NINJA
 
 ### How to use 
 ```
- #curl myip.ninja
+#curl myip.ninja
   > 8.8.8.8
 #curl v6.myip.ninja
   > aced:a11:7e57
