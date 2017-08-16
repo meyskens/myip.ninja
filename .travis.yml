@@ -1,6 +1,11 @@
 language: go
+sudo: required
+services:
+  - docker
 
 go:
 - 1.8
 
-script: go test ./
+script: 
+  - go test ./
+  - docker build -t maartje/myip.ninja ./
