@@ -6,7 +6,7 @@ import (
 )
 
 type config struct {
-	Bind      string   `json:"string"`
+	Bind      string   `json:"bind"`
 	Hostnames []string `json:"hostnames"`
 	TLS       bool     `json:"tls"`
 }
