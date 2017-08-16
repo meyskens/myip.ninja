@@ -8,14 +8,20 @@
   version = "v1.1.0"
 
 [[projects]]
-  name = "github.com/labstack/echo"
+  name = "github.com/dgrijalva/jwt-go"
   packages = ["."]
+  revision = "d2709f9f1f31ebcda9651b03077758c1f3a0018c"
+  version = "v3.0.0"
+
+[[projects]]
+  name = "github.com/labstack/echo"
+  packages = [".","middleware"]
   revision = "935a60782cbbc55110e7bd4b33120e4567cbee43"
   version = "v3.2.1"
 
 [[projects]]
   name = "github.com/labstack/gommon"
-  packages = ["color","log"]
+  packages = ["bytes","color","log","random"]
   revision = "779b8a8b9850a97acba6a3fe20feb628c39e17c1"
   version = "0.2.2"
 
@@ -70,6 +76,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "71d45190c1d2cfa40397f27f6e0ab2a9ac7fef08eae7365fa9287c3f2abb9902"
+  inputs-digest = "c8d9424a5f2537072c6e3cd07e1de456d5072837ddb99769a7ec283ee6057fd0"
   solver-name = "gps-cdcl"
   solver-version = 1
