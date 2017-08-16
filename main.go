@@ -25,6 +25,21 @@ func main() {
 	}
 }
 
+//IP is just a tring but called IP for XML conversion
+type IP string
+
 func handleRequest(c echo.Context) error {
+	if c.QueryParam("format") == "json" {
+		return c.JSON(http.StatusOK, map[string]string{"ip": c.RealIP()})
+	}
+
+	if c.QueryParam("format") == "jsonp" && c.QueryParam("callback") != "" {
+		return c.JSONP(http.StatusOK, c.QueryParam("callback"), map[string]string{"ip": c.RealIP()})
+	}
+
+	if c.QueryParam("format") == "xml" {
+		return c.XML(http.StatusOK, IP(c.RealIP()))
+	}
+
 	return c.String(http.StatusOK, c.RealIP())
 }
