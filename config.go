@@ -9,6 +9,7 @@ type config struct {
 	Bind      string   `json:"bind"`
 	Hostnames []string `json:"hostnames"`
 	TLS       bool     `json:"tls"`
+	CertCache string   `json:"certCache"`
 }
 
 func getConfig() config {

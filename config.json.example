@@ -1,5 +1,6 @@
 {
     "bind": ":443",
     "tls": true,
-    "hostnames": [ "v4.myip.ninja", "v6.myip.ninja" ]
+    "hostnames": [ "v4.myip.ninja", "v6.myip.ninja" ],
+    "certCache": "/var/www/.cache"
 }

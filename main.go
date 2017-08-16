@@ -17,6 +17,7 @@ func main() {
 
 	e.GET("/", handleRequest)
 	if cfg.TLS {
+		e.AutoTLSManager.Cache = autocert.DirCache(cfg.CertCache)
 		e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(cfg.Hostnames...)
 		e.Logger.Fatal(e.StartAutoTLS(cfg.Bind))
 	} else {
