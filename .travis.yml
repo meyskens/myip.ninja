@@ -9,3 +9,9 @@ go:
 script: 
   - go test ./
   - docker build -t maartje/myip.ninja ./
+
+deploy:
+  - provider: script
+    script: scripts/deploy.sh
+    on:
+      branch: master
