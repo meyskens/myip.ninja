@@ -10,6 +10,13 @@ MYIP.NINJA
   > 8.8.8.8
 #curl v6.myip.ninja
   > aced:a11:7e57
+#curl myip.ninja/?format=json
+  > {"ip":"8.8.8.8"}
+#curl myip.ninja/?format=jsonp&callback=cb
+  > cb({"ip":"188.189.89.234"});
+#curl myip.ninja/?format=xml
+  > <?xml version="1.0" encoding="UTF-8"?>
+  > <IP>188.189.89.234</IP>
 ```
 
 ### Why not use `insert local command here`
