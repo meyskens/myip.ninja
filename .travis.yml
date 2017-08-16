@@ -7,7 +7,7 @@ go:
 - 1.9
 
 script: 
-  - go test ./...
+  - go test ./
   - docker build -t maartje/myip.ninja ./
 
 deploy:
