@@ -9,6 +9,7 @@ type config struct {
 	Bind      string   `json:"bind"`
 	Hostnames []string `json:"hostnames"`
 	TLS       bool     `json:"tls"`
+	CORS      []string `json:"cors"`
 }
 
 func getConfig() config {
