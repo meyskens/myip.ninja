@@ -2,5 +2,5 @@
     "bind": ":443",
     "tls": true,
     "hostnames": [ "v4.myip.ninja", "v6.myip.ninja" ],
-    "cors": [ "v4.myip.ninja", "v6.myip.ninja" ]
+    "cors": [ "https://v4.myip.ninja", "https://v6.myip.ninja" ]
 }
