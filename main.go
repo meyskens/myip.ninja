@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -17,7 +18,6 @@ func main() {
 type IP string
 
 func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	// TO DO ADD CORS
 	response := getIP(request.Headers["X-Forwarded-For"])
 	contentType := "text/plain; charset=UTF-8"
 
@@ -29,7 +29,8 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		} else if format == "xml" {
 			// return c.XML(http.StatusOK, IP(c.RealIP()))
 		} else if callback, hasCallback := request.QueryStringParameters["callback"]; format == "jsonp" && hasCallback {
-			response = callback // TO DO: make real
+			contentType = "application/javascript; charset=UTF-8"
+			response = fmt.Sprintf("%s({\"ip\":\"%s\"});", callback, response)
 		}
 
 	}
