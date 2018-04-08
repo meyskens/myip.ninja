@@ -1,17 +1,23 @@
 language: go
 sudo: required
-services:
-  - docker
-
 go:
-- 1.9
-
-script: 
-  - go test ./
-  - docker build -t maartje/myip.ninja ./
-
+- 1.x
+script:
+- go test ./
+- go build ./
+- zip main.zip myip.ninja
 deploy:
-  - provider: script
-    script: scripts/deploy.sh
-    on:
-      branch: master
+  provider: lambda
+  function_name: myip
+  region: eu-west-3
+  role: arn:aws:iam::0123456789012:role/lambda_basic_execution
+  runtime: go1.x
+  handler_name: myip.ninja
+  skip_cleanup: true
+  zip: "./main.zip"
+  on:
+    branch: lambda
+  secret_access_key:
+    secure: hcDVSqD6vpSqAzsFpkXJfrnbplQXw9b8nyUtXUKqEZKx3lTlWWKOymhiw5aIPszOw5il8lsGpivuZTbAzHXFQN+KWw3SFtwWUmGrbYTQxxA6dOn9hizTn+oQC+N0XCOMsNtGLYg3g/qFZJn7rtbjk59VIpEAieAhMJoX2UfytTLdoGViRuhsBHWmSD0q+J2gF2jZ1Ylake8oxfYsrHbYInDTB2WLllYwDfE0W24KtL0Yx4d6UxDNi2JIX8/8sVJiOlESDW3cHuHWolTWiyplNKBe0gyvXxUSswM2BatPunyvmEkLtq8wO//JbUh1nmKZfEDRIri/4XmxSo2T5yx/z1+PK+oj1vaTApGe1uMbXMlSMqaGPaGEJVhmMbuTH4KcmgnYdAYJNtctOZY+6h3DkWk30yXPoDFuRXza0bWWbQ9vyMPxcKzvr3Vple8r2/Hq5gDIcmz43GiLdalPhCUOOnO5IusEktIwGwwSzAs/y6Jo58vFAVet//YmKrc0lA5o64HLYXTqxX+stEoIke8hQ/53FKHZnONYw39/haVoQeK+6tfS5qxtgD4vPBj/VvFEVLGynzmnbpa2rzcKwLvA0zhmoR/kyIrbjnbxxgtfHFNT13pk8iDoNBUujuQvfp4he0DAeHVff/rvjqphBKndvo1/51Y6Ud9iNonWvU4ulXQ=
+  access_key_id:
+    secure: F335ufvhgoQK7n9f+xgim90kUhvSzRSPt/Zzb3MtU/6yLUqRYOqgc9F7U8itE71X/u3z7oux5kZq5meyLQYgAFoM7BSazTPQd9BlKV2VjaMOVtvbY3geP9WKe3UQu2s+q8m1nER2Sm90AFhHf7gL0IxGgRHHHQyXHFYhzRiygKUyxu7NoAU/fGr9iam5GX9hplVfSvtyq0KrZQNBT+QQkVswZ31u72we0BRfMCEBk/qO3aVi0cCUisPEtQPlOK3cJ/CCtmP/2nwMIXygYr1lS00lFDN8i1u/FqnV/2i6WNOGUYPQS2DnREWmz3W9YmhL6nzwqcyGianmPWZ/3VbPKLKs3FthrocJ1cY0/TJbFpWaiQfdnwox7tMPxhlfBeH6el4PrDeUM7MgMHt1uRK8CuQ6jOjOcyXbsEX4x6YVJkYshhDW/fJo/rl1mrLlkW+HMrSWMEDpQRXcUniKIHVJ6Q78UCpYImuuVQ9OYGcwSNMAAhrrksl3TNOt/vYbe6zcZZ0HVrOLsa5i9VtbZ+hho11JHZ3AsWhz3d5hrdfGM7IDa0kxYVg+KBBGlWH5JrOD/bTqDWpWac2HBT8SijK65bBHSmgZH/AstjMJzXqEzlmFIgw+56hzUovy40w0j3Sw3U3I/y4a8sN99uHSl0Fu/534shWCPjWZAfbKHUGdpVs=

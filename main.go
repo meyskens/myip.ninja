@@ -1,45 +1,42 @@
 package main
 
 import (
-	"net/http"
+	"context"
+	"encoding/json"
+	"strings"
 
-	"golang.org/x/crypto/acme/autocert"
-
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 )
 
 func main() {
-	cfg := getConfig()
-
-	e := echo.New()
-	e.Use(middleware.CORS())
-
-	e.GET("/", handleRequest)
-	if cfg.TLS {
-		e.AutoTLSManager.Cache = autocert.DirCache(cfg.CertCache)
-		e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(cfg.Hostnames...)
-		e.Logger.Fatal(e.StartAutoTLS(cfg.Bind))
-	} else {
-		e.Logger.Fatal(e.Start(cfg.Bind))
-	}
+	lambda.Start(handleRequest)
 }
 
 //IP is just a tring but called IP for XML conversion
 type IP string
 
-func handleRequest(c echo.Context) error {
-	if c.QueryParam("format") == "json" {
-		return c.JSON(http.StatusOK, map[string]string{"ip": c.RealIP()})
+func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// TO DO ADD CORS
+	response := getIP(request.Headers["X-Forwarded-For"])
+	contentType := "text/plain; charset=UTF-8"
+
+	if format, hasFormat := request.QueryStringParameters["format"]; hasFormat {
+		if format == "json" {
+			contentType = "application/json; charset=UTF-8"
+			out, _ := json.Marshal(map[string]string{"ip": response})
+			response = string(out)
+		} else if format == "xml" {
+			// return c.XML(http.StatusOK, IP(c.RealIP()))
+		} else if callback, hasCallback := request.QueryStringParameters["callback"]; format == "jsonp" && hasCallback {
+			response = callback // TO DO: make real
+		}
+
 	}
 
-	if c.QueryParam("format") == "jsonp" && c.QueryParam("callback") != "" {
-		return c.JSONP(http.StatusOK, c.QueryParam("callback"), map[string]string{"ip": c.RealIP()})
-	}
+	return events.APIGatewayProxyResponse{Body: response, StatusCode: 200, Headers: map[string]string{"Content-Type": contentType}}, nil
+}
 
-	if c.QueryParam("format") == "xml" {
-		return c.XML(http.StatusOK, IP(c.RealIP()))
-	}
-
-	return c.String(http.StatusOK, c.RealIP())
+func getIP(in string) string {
+	return strings.TrimSpace(strings.Split(in, ",")[0])
 }
