@@ -10,7 +10,7 @@ deploy:
   provider: lambda
   function_name: myip
   region: eu-west-3
-  role: arn:aws:iam::0123456789012:role/lambda_basic_execution
+  role: "arn:aws:iam::867543516038:policy/Travis-Lambda"
   runtime: go1.x
   handler_name: myip.ninja
   skip_cleanup: true
