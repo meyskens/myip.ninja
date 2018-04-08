@@ -14,9 +14,6 @@ func main() {
 	lambda.Start(handleRequest)
 }
 
-//IP is just a tring but called IP for XML conversion
-type IP string
-
 func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	response := getIP(request.Headers["X-Forwarded-For"])
 	contentType := "text/plain; charset=UTF-8"
