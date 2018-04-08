@@ -15,6 +15,7 @@ deploy:
   handler_name: myip.ninja
   skip_cleanup: true
   zip: "./main.zip"
+  handler_name: myip.ninja
   on:
     branch: lambda
   secret_access_key:
