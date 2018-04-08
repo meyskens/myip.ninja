@@ -27,6 +27,8 @@ func handleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 			out, _ := json.Marshal(map[string]string{"ip": response})
 			response = string(out)
 		} else if format == "xml" {
+			contentType = "application/xml; charset=UTF-8"
+			response = fmt.Sprintf("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<IP>%s</IP>", response)
 			// return c.XML(http.StatusOK, IP(c.RealIP()))
 		} else if callback, hasCallback := request.QueryStringParameters["callback"]; format == "jsonp" && hasCallback {
 			contentType = "application/javascript; charset=UTF-8"
