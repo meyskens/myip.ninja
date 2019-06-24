@@ -14,7 +14,7 @@ import (
 
 func TestGzip(t *testing.T) {
 	e := echo.New()
-	req := httptest.NewRequest(echo.GET, "/", nil)
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
@@ -24,28 +24,31 @@ func TestGzip(t *testing.T) {
 		return nil
 	})
 	h(c)
-	assert.Equal(t, "test", rec.Body.String())
+
+	assert := assert.New(t)
+
+	assert.Equal("test", rec.Body.String())
 
 	// Gzip
-	req = httptest.NewRequest(echo.GET, "/", nil)
+	req = httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set(echo.HeaderAcceptEncoding, gzipScheme)
 	rec = httptest.NewRecorder()
 	c = e.NewContext(req, rec)
 	h(c)
-	assert.Equal(t, gzipScheme, rec.Header().Get(echo.HeaderContentEncoding))
-	assert.Contains(t, rec.Header().Get(echo.HeaderContentType), echo.MIMETextPlain)
+	assert.Equal(gzipScheme, rec.Header().Get(echo.HeaderContentEncoding))
+	assert.Contains(rec.Header().Get(echo.HeaderContentType), echo.MIMETextPlain)
 	r, err := gzip.NewReader(rec.Body)
-	defer r.Close()
-	if assert.NoError(t, err) {
+	if assert.NoError(err) {
 		buf := new(bytes.Buffer)
+		defer r.Close()
 		buf.ReadFrom(r)
-		assert.Equal(t, "test", buf.String())
+		assert.Equal("test", buf.String())
 	}
 }
 
 func TestGzipNoContent(t *testing.T) {
 	e := echo.New()
-	req := httptest.NewRequest(echo.GET, "/", nil)
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set(echo.HeaderAcceptEncoding, gzipScheme)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
@@ -65,7 +68,7 @@ func TestGzipErrorReturned(t *testing.T) {
 	e.GET("/", func(c echo.Context) error {
 		return echo.ErrNotFound
 	})
-	req := httptest.NewRequest(echo.GET, "/", nil)
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	req.Header.Set(echo.HeaderAcceptEncoding, gzipScheme)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
@@ -78,7 +81,7 @@ func TestGzipWithStatic(t *testing.T) {
 	e := echo.New()
 	e.Use(Gzip())
 	e.Static("/test", "../_fixture/images")
-	req := httptest.NewRequest(echo.GET, "/test/walle.png", nil)
+	req := httptest.NewRequest(http.MethodGet, "/test/walle.png", nil)
 	req.Header.Set(echo.HeaderAcceptEncoding, gzipScheme)
 	rec := httptest.NewRecorder()
 	e.ServeHTTP(rec, req)
@@ -89,12 +92,13 @@ func TestGzipWithStatic(t *testing.T) {
 		assert.Equal(t, cl, rec.Body.Len())
 	}
 	r, err := gzip.NewReader(rec.Body)
-	assert.NoError(t, err)
-	defer r.Close()
-	want, err := ioutil.ReadFile("../_fixture/images/walle.png")
 	if assert.NoError(t, err) {
-		var buf bytes.Buffer
-		buf.ReadFrom(r)
-		assert.Equal(t, want, buf.Bytes())
+		defer r.Close()
+		want, err := ioutil.ReadFile("../_fixture/images/walle.png")
+		if assert.NoError(t, err) {
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(r)
+			assert.Equal(t, want, buf.Bytes())
+		}
 	}
 }

@@ -2,12 +2,15 @@ package middleware
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
+	"time"
+	"unsafe"
 
 	"github.com/labstack/echo"
 	"github.com/stretchr/testify/assert"
@@ -16,7 +19,7 @@ import (
 func TestLogger(t *testing.T) {
 	// Note: Just for the test coverage, not a real test.
 	e := echo.New()
-	req := httptest.NewRequest(echo.GET, "/", nil)
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	h := Logger()(func(c echo.Context) error {
@@ -43,7 +46,7 @@ func TestLogger(t *testing.T) {
 	h(c)
 
 	// Status 5xx with empty path
-	req = httptest.NewRequest(echo.GET, "/", nil)
+	req = httptest.NewRequest(http.MethodGet, "/", nil)
 	rec = httptest.NewRecorder()
 	c = e.NewContext(req, rec)
 	h = Logger()(func(c echo.Context) error {
@@ -54,7 +57,7 @@ func TestLogger(t *testing.T) {
 
 func TestLoggerIPAddress(t *testing.T) {
 	e := echo.New()
-	req := httptest.NewRequest(echo.GET, "/", nil)
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	buf := new(bytes.Buffer)
@@ -89,7 +92,7 @@ func TestLoggerTemplate(t *testing.T) {
 		Format: `{"time":"${time_rfc3339_nano}","id":"${id}","remote_ip":"${remote_ip}","host":"${host}","user_agent":"${user_agent}",` +
 			`"method":"${method}","uri":"${uri}","status":${status}, "latency":${latency},` +
 			`"latency_human":"${latency_human}","bytes_in":${bytes_in}, "path":"${path}", "referer":"${referer}",` +
-			`"bytes_out":${bytes_out},"ch":"${header:X-Custom-Header}",` +
+			`"bytes_out":${bytes_out},"ch":"${header:X-Custom-Header}", "protocol":"${protocol}"` +
 			`"us":"${query:username}", "cf":"${form:username}", "session":"${cookie:session}"}` + "\n",
 		Output: buf,
 	}))
@@ -98,7 +101,7 @@ func TestLoggerTemplate(t *testing.T) {
 		return c.String(http.StatusOK, "Header Logged")
 	})
 
-	req := httptest.NewRequest(echo.GET, "/?username=apagano-param&password=secret", nil)
+	req := httptest.NewRequest(http.MethodGet, "/?username=apagano-param&password=secret", nil)
 	req.RequestURI = "/"
 	req.Header.Add(echo.HeaderXRealIP, "127.0.0.1")
 	req.Header.Add("Referer", "google.com")
@@ -136,4 +139,35 @@ func TestLoggerTemplate(t *testing.T) {
 	for token, present := range cases {
 		assert.True(t, strings.Contains(buf.String(), token) == present, "Case: "+token)
 	}
+}
+
+func TestLoggerCustomTimestamp(t *testing.T) {
+	buf := new(bytes.Buffer)
+	customTimeFormat := "2006-01-02 15:04:05.00000"
+	e := echo.New()
+	e.Use(LoggerWithConfig(LoggerConfig{
+		Format: `{"time":"${time_custom}","id":"${id}","remote_ip":"${remote_ip}","host":"${host}","user_agent":"${user_agent}",` +
+			`"method":"${method}","uri":"${uri}","status":${status}, "latency":${latency},` +
+			`"latency_human":"${latency_human}","bytes_in":${bytes_in}, "path":"${path}", "referer":"${referer}",` +
+			`"bytes_out":${bytes_out},"ch":"${header:X-Custom-Header}",` +
+			`"us":"${query:username}", "cf":"${form:username}", "session":"${cookie:session}"}` + "\n",
+		CustomTimeFormat: customTimeFormat,
+		Output:           buf,
+	}))
+
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "custom time stamp test")
+	})
+
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	rec := httptest.NewRecorder()
+	e.ServeHTTP(rec, req)
+
+	var objs map[string]*json.RawMessage
+	if err := json.Unmarshal([]byte(buf.String()), &objs); err != nil {
+		panic(err)
+	}
+	loggedTime := *(*string)(unsafe.Pointer(objs["time"]))
+	_, err := time.Parse(customTimeFormat, loggedTime)
+	assert.Error(t, err)
 }

@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"crypto/tls"
 	"html/template"
+	"net"
 	"net/mail"
 	"net/smtp"
-
-	"net"
-
 	"time"
 
 	"github.com/labstack/gommon/random"
@@ -23,15 +21,15 @@ type (
 	}
 
 	Message struct {
-		ID          string
-		From        string
-		To          string
-		CC          string
-		Subject     string
-		Text        string
-		HTML        string
-		Inlines     []*File
-		Attachments []*File
+		ID          string  `json:"id"`
+		From        string  `json:"from"`
+		To          string  `json:"to"`
+		CC          string  `json:"cc"`
+		Subject     string  `json:"subject"`
+		BodyText    string  `json:"body_text"`
+		BodyHTML    string  `json:"body_html"`
+		Inlines     []*File `json:"inlines"`
+		Attachments []*File `json:"attachments"`
 		buffer      *bytes.Buffer
 		boundary    string
 	}
@@ -107,12 +105,12 @@ func (e *Email) Send(m *Message) (err error) {
 	m.buffer.WriteString("\r\n")
 
 	// Message body
-	if m.Text != "" {
-		m.writeText(m.Text, "text/plain")
-	} else if m.HTML != "" {
-		m.writeText(m.HTML, "text/html")
+	if m.BodyText != "" {
+		m.writeText(m.BodyText, "text/plain")
+	} else if m.BodyHTML != "" {
+		m.writeText(m.BodyHTML, "text/html")
 	} else {
-		// TODO:
+		m.writeBoundary()
 	}
 
 	// Inlines/attachments
@@ -131,7 +129,7 @@ func (e *Email) Send(m *Message) (err error) {
 	if err != nil {
 		return
 	}
-	defer c.Close()
+	defer c.Quit()
 
 	// Check if TLS is required
 	if ok, _ := c.Extension("STARTTLS"); ok {
