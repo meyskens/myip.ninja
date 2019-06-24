@@ -33,7 +33,7 @@ func TestGetIPJSON(t *testing.T) {
 	// Assertions
 	if assert.NoError(t, handleRequest(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "{\"ip\":\"192.0.2.1\"}", rec.Body.String())
+		assert.Equal(t, "{\"ip\":\"192.0.2.1\"}\n", rec.Body.String())
 	}
 }
 
@@ -47,7 +47,7 @@ func TestGetJSONP(t *testing.T) {
 	// Assertions
 	if assert.NoError(t, handleRequest(c)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
-		assert.Equal(t, "cb({\"ip\":\"192.0.2.1\"});", rec.Body.String())
+		assert.Equal(t, "cb({\"ip\":\"192.0.2.1\"}\n);", rec.Body.String())
 	}
 }
 
