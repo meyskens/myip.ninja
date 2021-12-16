@@ -1,10 +1,8 @@
 package main
 
 import (
-	"crypto/tls"
 	"net/http"
 
-	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/labstack/echo/v4"
@@ -24,20 +22,18 @@ func main() {
 			Cache:      autocert.DirCache(cfg.CertCache),
 			HostPolicy: autocert.HostWhitelist(cfg.Hostnames...),
 		}
-		s := http.Server{
-			Addr:    cfg.Bind,
-			Handler: e, // set Echo as handler
-			TLSConfig: &tls.Config{
-				GetCertificate: autoTLSManager.GetCertificate,
-				NextProtos:     []string{acme.ALPNProto},
-			},
-		}
 
 		httpServer := &http.Server{
 			Handler: autoTLSManager.HTTPHandler(e),
 			Addr:    ":80",
 		}
 		go httpServer.ListenAndServe()
+
+		s := http.Server{
+			Addr:      cfg.Bind,
+			Handler:   e,
+			TLSConfig: autoTLSManager.TLSConfig(),
+		}
 		if err := s.ListenAndServeTLS("", ""); err != http.ErrServerClosed {
 			e.Logger.Fatal(err)
 		}
