@@ -33,8 +33,11 @@ func main() {
 			},
 		}
 
-		e.AutoTLSManager.Cache = autocert.DirCache(cfg.CertCache)
-		e.AutoTLSManager.HostPolicy = autocert.HostWhitelist(cfg.Hostnames...)
+		httpServer := &http.Server{
+			Handler: autoTLSManager.HTTPHandler(e),
+			Addr:    ":80",
+		}
+		go httpServer.ListenAndServe()
 		if err := s.ListenAndServeTLS("", ""); err != http.ErrServerClosed {
 			e.Logger.Fatal(err)
 		}
