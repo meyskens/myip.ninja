@@ -1,4 +1,4 @@
-FROM golang:1.12
+FROM golang:1.17
 
 ADD ./ /go/src/github.com/meyskens/myip.ninja
 
